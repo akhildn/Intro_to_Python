@@ -29,7 +29,12 @@ def ls_instances():
               help='Stop instances by project tag')
 def stop_instances(project):
     """Stop EC2 instances"""
-    start_or_stop_instances(project, 'stop')
+
+    instances = filter_instances(project)
+
+    for i in instances:
+        print("Stopping {0}...".format(i.id))
+        i.stop()
 
 
 @ls_instances.command('start')
@@ -37,19 +42,12 @@ def stop_instances(project):
               help='Start instances by project tag')
 def start_instances(project):
     """Stop EC2 instances"""
-    start_or_stop_instances(project, 'start')
 
-
-def start_or_stop_instances(project, action):
     instances = filter_instances(project)
 
     for i in instances:
-        if action == 'start':
-            print("Starting {0}...".format(i.id))
-            i.start()
-        elif action == 'stop':
-            print("Stopping {0}...".format(i.id))
-            i.stop()
+        print("Starting {0}...".format(i.id))
+        i.start()
 
 
 @ls_instances.command('list')
