@@ -1,2 +1,2 @@
 # Intro_to_Python
-Udacity intro course
+Udacity & cloudguru sample exercise.
