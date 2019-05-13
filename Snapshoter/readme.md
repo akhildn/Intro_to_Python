@@ -6,7 +6,7 @@
 
 ## Installed modules
 	- boto3 
-	-click
+	- click
 
 
 ### click commands
