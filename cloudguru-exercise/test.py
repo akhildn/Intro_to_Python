@@ -1,0 +1,2 @@
+from ds import dice
+
