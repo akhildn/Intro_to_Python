@@ -10,6 +10,12 @@
 
 
 ## click commands
-- list
-- start
-- stop
+- instances
+  - list
+  - start
+  - stop
+  - snapshots
+- volumes
+  - list
+- snapshots
+  - list
