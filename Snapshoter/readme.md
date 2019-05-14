@@ -1,4 +1,4 @@
-# A Cloud Guru Proof of Concept
+# Intro to python with aws (Proof of Concept)
 
 ## Project environment
 - Python 3.7
