@@ -14,7 +14,7 @@
   - list
   - start
   - stop
-  - snapshots
+  - snapshot
 - volumes
   - list
 - snapshots
