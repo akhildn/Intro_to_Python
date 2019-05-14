@@ -20,9 +20,46 @@ def filter_instances(project):
     return instances
 
 
+def has_pending_snapshot(volume):
+    sshots = list(volume.snapshots.all())
+    return sshots and sshots[0].state == 'pending'
+
+
 @click.group()
 def cli():
     """Main group"""
+
+
+@cli.group('snapshots')
+def snapshots():
+    """Commands for snapshots"""
+
+
+@snapshots.command('list')
+@click.option('--project', default=None,
+              help="Only snapshots for project (tag Project:<name>)")
+@click.option('--all', 'list_all', default=False, is_flag=True,
+              help="List all snapshots for each volume, not just the most recent")
+def list_snapshots(project, list_all):
+    "List EC2 snapshots"
+
+    instances = filter_instances(project)
+
+    for i in instances:
+        for v in i.volumes.all():
+            for s in v.snapshots.all():
+                print(", ".join((
+                    s.id,
+                    v.id,
+                    i.id,
+                    s.state,
+                    s.progress,
+                    s.start_time.strftime("%c")
+                )))
+
+                if s.state == 'completed' and not list_all: break
+
+    return
 
 
 @cli.group('volumes')
@@ -66,6 +103,9 @@ def create_snapshots(project):
         i.stop()
         i.wait_until_stopped()
         for v in i.volumes.all():
+            if has_pending_snapshot(v):
+                print("  Skipping {0}, snapshot already in progress".format(v.id))
+                continue
             print('Creating snapshot of {0}'.format(v.id))
             v.create_snapshot(Description="Created by python script")
         print('Starting instance {0}'.format(i.id))
