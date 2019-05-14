@@ -20,34 +20,57 @@ def filter_instances(project):
 
 
 @click.group()
+def cli():
+    """Main group"""
+
+
+@cli.group('volumes')
+def volumes():
+    """Command for volumes"""
+
+
+@volumes.command('list')
+@click.option('--project', default=None,
+              help='lists all volumes of the ec2 instances in the project')
+def ls_volumes(project):
+    """List EC2 Volumes"""
+    instances = filter_instances(project)
+
+    for i in instances:
+        for v in i.volumes.all():
+            print(",".join((
+                v.id,
+                i.id,
+                v.state,
+                str(v.size) + "gb",
+                v.encrypted and "Encrypted" or "Not Encrypted"
+            )))
+
+
+@cli.group('instances')
 def ls_instances():
     """Command for instances"""
 
 
-@ls_instances.command('stop')
-@click.option('--project', default=None,
-              help='Stop instances by project tag')
-def stop_instances(project):
-    """Stop EC2 instances"""
+@ls_instances.command('snapshot',
+                      help='Create snapshots of all volumes')
+@click.option('--project', default=None)
+def create_snapshots(project):
+    """Create snapshots for instances"""
 
     instances = filter_instances(project)
 
     for i in instances:
-        print("Stopping {0}...".format(i.id))
+        print('Stopping instance {0}'.format(i.id))
         i.stop()
-
-
-@ls_instances.command('start')
-@click.option('--project', default=None,
-              help='Start instances by project tag')
-def start_instances(project):
-    """Stop EC2 instances"""
-
-    instances = filter_instances(project)
-
-    for i in instances:
-        print("Starting {0}...".format(i.id))
+        i.wait_until_stopped()
+        for v in i.volumes.all():
+            print('Creating snapshot of {0}'.format(v.id))
+            v.create_snapshot(Description="Created by python script")
+        print('Starting instance {0}'.format(i.id))
         i.start()
+        i.wait_until_running()
+        print('instance {0} is running'.format(i.id))
 
 
 @ls_instances.command('list')
@@ -68,5 +91,31 @@ def list_instances(project):
         )))
 
 
+@ls_instances.command('start')
+@click.option('--project', default=None,
+              help='Start instances by project tag')
+def start_instances(project):
+    """Stop EC2 instances"""
+
+    instances = filter_instances(project)
+
+    for i in instances:
+        print("Starting {0}...".format(i.id))
+        i.start()
+
+
+@ls_instances.command('stop')
+@click.option('--project', default=None,
+              help='Stop instances by project tag')
+def stop_instances(project):
+    """Stop EC2 instances"""
+
+    instances = filter_instances(project)
+
+    for i in instances:
+        print("Stopping {0}...".format(i.id))
+        i.stop()
+
+
 if __name__ == '__main__':
-    ls_instances()
+    cli()
